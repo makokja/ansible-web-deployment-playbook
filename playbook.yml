@@ -1,0 +1,25 @@
+# This playbook requires privilege escalation to be set. Please
+# refer the ansible.cfg in current working directory for privilege_escalation
+# configuration.
+
+- name: Deploy a web application
+  hosts: db_and_web_server
+  vars:
+      db_name: employee_db
+      db_user: Makok
+      db_password: Makok123!
+  tasks:
+    - name: Install all required dependencies
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - "epel-release"
+        - "python-setuptools"
+        - "python-essential"
+        - "python"
+        - "python-devel"
+        - "python-pip"
+
+    - include: tasks/db.yml
+    - include: tasks/web.yml

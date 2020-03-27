@@ -1,0 +1,38 @@
+- name: Install required Python libraries
+  pip:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "flask"
+    - "flask-mysql"
+
+- name: Copy source code
+  copy:
+    src: /root/app.py
+    dest: /opt/app.py
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: allow firewall 80
+  firewalld:
+      service: http
+      permanent: yes
+      state: enabled
+- name: allow firewall 443
+  firewalld:
+      service: https
+      permanent: yes
+      state: enabled
+- name: allow firewall 5000
+  firewalld:
+        port: 5000/tcp
+        permanent: yes
+        state: enabled
+- name: 'restart firewalld service'
+  service:
+        name: firewalld
+        state: reloaded
+
+- name: Start web server
+  shell: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0 &

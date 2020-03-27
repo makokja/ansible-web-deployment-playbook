@@ -1,0 +1,103 @@
+# This playbook requires privilege escalation to be set. Please
+# refer the ansible.cfg in current working directory for privilege_escalation
+# configuration.
+
+- name: Deploy a web application
+  hosts: db_and_web_server
+  tasks:
+    - name: Install all required dependencies
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - "epel-release"
+        - "python"
+        - "python-devel"
+        - "python-pip"
+
+    - name: Install MySQL community repository
+      yum:
+        name: "http://repo.mysql.com/mysql-community-release-el7-5.noarch.rpm"
+        state: present
+
+    - name: Install MySQL database
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - "mysql-server"
+        - "mysql-devel"
+
+    - name: create MySQL configuration file
+      copy:
+        content: |
+          [client]
+          user=root
+          password="@targ8et"
+        dest: "/etc/.my.cnf"
+
+    - name: Start MySQL Service
+      service:
+        name: mysqld
+        state: started
+        enabled: yes
+
+    - name: Install mysql-python package
+      yum:
+        name: MySQL-python
+        state: present
+
+    - name: Install pip
+      yum:
+        name: "python-pip"
+        state: present
+
+    - name: Install required Python libraries
+      pip:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - "flask"
+        - "flask-mysql"
+
+    - name: Copy source code
+      copy:
+        src: /root/app.py
+        dest: /opt/app.py
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Create Database user
+      mysql_user:
+          name: "{{ db_user }}"
+          password: " {{ Makok123! }}"
+          priv: '*.*:ALL'
+          state: present
+
+    - name: Create Application Database
+      mysql_db:
+        name: "{{db_name}}"
+        state: present
+    - name: allow firewall 80
+      firewalld:
+          service: http
+          permanent: yes
+          state: enabled
+    - name: allow firewall 443
+      firewalld:
+          service: https
+          permanent: yes
+          state: enabled
+    - name: allow firewall 5000
+      firewalld:
+            port: 5000/tcp
+            permanent: yes
+            state: enabled
+    - name: 'restart firewalld service'
+      service:
+            name: firewalld
+            state: reloaded
+
+    - name: Start web server
+      shell: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0 &
