@@ -1,5 +1,5 @@
-target1 ansible_host=192.168.153.142 ansible_ssh_pass=Makok123!
-target2 ansible_host=192.168.153.143 ansible_ssh_pass=Makok123!
+target1 ansible_host=192.168.153.142 ansible_ssh_pass=xxxx
+target2 ansible_host=192.168.153.143 ansible_ssh_pass=xxxx
 
 [db_and_web_server]
 target1
